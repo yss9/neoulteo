@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neoulteo.batch.mapper.TourBatchMapper">
+    <select id="findAttractionsForComparison" resultType="com.neoulteo.batch.dto.TourAttractionDto">
+        SELECT
+            content_id AS contentId,
+            title,
+            addr1,
+            first_image1 AS firstImage1,
+            latitude,
+            longitude,
+            content_type_id AS contentTypeId,
+            area_code AS areaCode,
+            si_gun_gu_code AS siGunGuCode,
+            tel
+        FROM attractions
+        <where>
+            <if test="areaCode != null and areaCode != '' and areaCode != 'NATIONWIDE'">
+                area_code = #{areaCode}
+            </if>
+            <if test="contentTypeId != null and contentTypeId != ''">
+                AND content_type_id = #{contentTypeId}
+            </if>
+        </where>
+    </select>
+
+    <insert id="upsertAttraction" parameterType="com.neoulteo.batch.dto.TourAttractionDto">
+        INSERT INTO attractions (
+            id,
+            content_id,
+            title,
+            content_type_id,
+            area_code,
+            si_gun_gu_code,
+            addr1,
+            first_image1,
+            latitude,
+            longitude
+        )
+        VALUES (
+            #{contentId},
+            #{contentId},
+            #{title},
+            NULLIF(#{contentTypeId}, ''),
+            NULLIF(#{areaCode}, ''),
+            NULLIF(#{siGunGuCode}, ''),
+            #{addr1},
+            #{firstImage1},
+            NULLIF(#{latitude}, ''),
+            NULLIF(#{longitude}, '')
+        )
+        ON DUPLICATE KEY UPDATE
+            title = VALUES(title),
+            addr1 = VALUES(addr1),
+            first_image1 = VALUES(first_image1),
+            latitude = VALUES(latitude),
+            longitude = VALUES(longitude),
+            content_type_id = VALUES(content_type_id),
+            area_code = VALUES(area_code),
+            si_gun_gu_code = VALUES(si_gun_gu_code)
+    </insert>
+
+    <insert id="insertReport" parameterType="com.neoulteo.batch.dto.TourBatchReportDto"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO tour_batch_reports (
+            report_date,
+            area_code,
+            content_type_id,
+            item_count,
+            new_item_count,
+            changed_item_count,
+            missing_item_count,
+            unchanged_item_count,
+            change_summary,
+            ai_summary,
+            pdf_path
+        )
+        VALUES (
+            #{reportDate},
+            #{areaCode},
+            #{contentTypeId},
+            #{itemCount},
+            #{newItemCount},
+            #{changedItemCount},
+            #{missingItemCount},
+            #{unchangedItemCount},
+            #{changeSummary},
+            #{aiSummary},
+            #{pdfPath}
+        )
+    </insert>
+
+    <update id="updateReportSummary">
+        UPDATE tour_batch_reports
+        SET ai_summary = #{aiSummary}
+        WHERE id = #{id}
+    </update>
+
+    <update id="updateReportPdfPath">
+        UPDATE tour_batch_reports
+        SET pdf_path = #{pdfPath}
+        WHERE id = #{id}
+    </update>
+</mapper>

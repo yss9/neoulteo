@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neoulteo.domain.attraction.mapper.AttractionMapper">
+    <select id="loadSidos" resultType="map">
+        SELECT sido_code AS code,
+               sido_name AS name
+        FROM sidos
+        ORDER BY sido_code
+    </select>
+
+    <select id="loadGuguns" resultType="map">
+        SELECT gugun_code AS code,
+               gugun_name AS name
+        FROM guguns
+        WHERE sido_code = #{sidoCode}
+        ORDER BY gugun_code
+    </select>
+
+    <select id="searchAttractions" resultType="map">
+        SELECT content_id AS contentid,
+               title,
+               addr1,
+               first_image1 AS firstimage,
+               latitude AS mapy,
+               longitude AS mapx,
+               a.content_type_id AS contenttypeid,
+               COALESCE(ct.content_type_name, '') AS contentTypeName,
+               area_code AS areacode,
+               si_gun_gu_code AS sigungucode,
+               overview
+        FROM attractions a
+        LEFT JOIN contenttypes ct ON ct.content_type_id = a.content_type_id
+        WHERE 1 = 1
+        <if test="areaCode != null and areaCode.trim() != ''">
+            AND a.area_code = #{areaCode}
+        </if>
+        <if test="gugunCode != null and gugunCode.trim() != ''">
+            AND a.si_gun_gu_code = #{gugunCode}
+        </if>
+        <if test="contentTypeId != null and contentTypeId.trim() != ''">
+            AND a.content_type_id = #{contentTypeId}
+        </if>
+        <if test="keyword != null and keyword.trim() != ''">
+            AND (
+                a.title LIKE CONCAT('%', #{keyword}, '%')
+                OR a.addr1 LIKE CONCAT('%', #{keyword}, '%')
+                OR a.overview LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        ORDER BY a.title
+        LIMIT 100
+    </select>
+
+    <select id="findRagAttractionDocuments" resultType="com.neoulteo.ai.resource.RagAttractionDocument">
+        SELECT a.content_id AS contentId,
+               a.title,
+               a.addr1 AS address,
+               COALESCE(ct.content_type_name, '') AS contentTypeName,
+               a.overview,
+               a.area_code AS areaCode,
+               a.si_gun_gu_code AS sigunguCode
+        FROM attractions a
+        LEFT JOIN contenttypes ct ON ct.content_type_id = a.content_type_id
+        WHERE a.title IS NOT NULL
+          AND (
+              a.overview IS NOT NULL
+              OR a.addr1 IS NOT NULL
+          )
+        ORDER BY
+            CASE WHEN a.overview IS NULL OR a.overview = '' THEN 1 ELSE 0 END,
+            a.title
+        <if test="limit != null and limit &gt; 0">
+            LIMIT #{limit}
+        </if>
+    </select>
+</mapper>

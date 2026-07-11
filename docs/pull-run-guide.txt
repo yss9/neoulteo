@@ -1,0 +1,176 @@
+Neoulteo 프로젝트 pull 후 실행 가이드
+====================================
+
+이 문서는 GitLab에서 프로젝트를 처음 clone/pull 받은 사람이 로컬에서 실행하기 위해 준비해야 하는 파일과 명령어를 정리한 문서입니다.
+
+
+1. 프로젝트 받기
+---------------
+
+처음 받는 경우:
+
+  git clone https://lab.ssafy.com/jrdtjr/pjt11_buk03_15_02.git
+  cd pjt11_buk03_15_02
+
+이미 받은 사람이 최신 코드만 받는 경우:
+
+  git pull
+
+
+2. Git에 올라오지 않는 로컬 파일
+-------------------------------
+
+아래 파일/폴더는 각자 PC에서 직접 만들거나 설치해야 합니다.
+
+  frontend/.env
+  frontend/node_modules/
+  frontend/dist/
+  backend/target/
+  storage/
+  .idea/
+
+이 중 실제로 사람이 직접 만들어야 하는 파일은 frontend/.env 입니다.
+나머지는 실행/빌드/IDE 사용 중 자동으로 만들어집니다.
+
+
+3. 프론트엔드 환경 설정
+----------------------
+
+frontend/.env.example 파일을 참고해서 frontend/.env 파일을 직접 만듭니다.
+
+파일 위치:
+
+  frontend/.env
+
+내용:
+
+  VITE_KAKAO_MAP_APP_KEY=본인_카카오_JavaScript_키
+
+주의:
+
+  - frontend/.env는 Git에 올라가지 않습니다.
+  - Kakao Developers에서 JavaScript 키를 사용해야 합니다.
+  - Kakao Developers > 내 애플리케이션 > 플랫폼 > Web 플랫폼에 아래 주소를 등록합니다.
+
+    http://127.0.0.1:5173
+    http://localhost:5173
+
+  - 실제 접속 주소와 등록 주소가 다르면 지도가 안 뜰 수 있습니다.
+
+
+4. 프론트엔드 실행
+-----------------
+
+pnpm이 설치되어 있어야 합니다.
+
+  cd frontend
+  pnpm install
+  pnpm dev
+
+접속 주소:
+
+  http://127.0.0.1:5173
+
+
+5. 백엔드 DB 준비
+----------------
+
+현재 백엔드는 MySQL의 ssafy_trip 데이터베이스를 사용합니다.
+
+기본 설정 파일:
+
+  backend/src/main/resources/application.properties
+
+기본 DB 설정:
+
+  spring.datasource.url=jdbc:mysql://localhost:3306/ssafy_trip
+  spring.datasource.username=ssafy
+  spring.datasource.password=ssafy
+
+MySQL에서 DB와 계정을 만듭니다.
+
+  CREATE DATABASE ssafy_trip;
+  CREATE USER 'ssafy'@'localhost' IDENTIFIED BY 'ssafy';
+  GRANT ALL PRIVILEGES ON ssafy_trip.* TO 'ssafy'@'localhost';
+  FLUSH PRIVILEGES;
+
+이미 ssafy 계정이 있다면 CREATE USER에서 에러가 날 수 있습니다.
+그 경우 계정 생성은 건너뛰고 권한만 확인하면 됩니다.
+
+
+6. 관광지 데이터 import
+----------------------
+
+관광지 검색 기능을 제대로 쓰려면 SSAFY_TRIP_Dump.sql 데이터를 MySQL에 넣어야 합니다.
+
+예시:
+
+  mysql -u ssafy -pssafy ssafy_trip < SSAFY_TRIP_Dump.sql
+
+SSAFY_TRIP_Dump.sql 파일 위치는 각자 다운로드 받은 경로에 맞게 바꿔서 실행합니다.
+
+
+7. 백엔드 실행
+-------------
+
+  cd backend
+  .\mvnw.cmd spring-boot:run
+
+백엔드 주소:
+
+  http://localhost:8080/neoulteo
+
+프론트엔드는 Vite proxy를 통해 /api 요청을 백엔드로 전달합니다.
+
+
+8. AI 서버 실행 선택 사항
+------------------------
+
+AI 챗봇 기능까지 사용하려면 ai-server를 따로 실행해야 합니다.
+
+AI 키는 코드에 적지 않고 환경변수나 application-local.properties로 등록합니다.
+
+PowerShell 예시:
+
+  $env:GMS_OPENAI_API_KEY="본인_GMS_OPENAI_API_KEY"
+  $env:GMS_OPENAI_BASE_URL="https://gms.ssafy.io/gmsapi/api.openai.com/v1"
+  $env:GMS_OPENAI_MODEL="gpt-4o-mini"
+  cd ai-server
+  pip install -r requirements.txt
+  uvicorn main:app --reload --port 8000
+
+AI 기능을 사용하지 않을 경우 이 단계는 생략해도 됩니다.
+
+
+9. 실행 순서 요약
+----------------
+
+1) MySQL 실행
+2) ssafy_trip DB 준비
+3) SSAFY_TRIP_Dump.sql import
+4) backend 실행
+5) frontend/.env 생성
+6) frontend에서 pnpm install
+7) frontend에서 pnpm dev
+8) http://127.0.0.1:5173 접속
+
+
+10. Git에 올리면 안 되는 것
+--------------------------
+
+아래 항목은 .gitignore로 제외되어야 합니다.
+
+  frontend/.env
+  frontend/node_modules/
+  frontend/dist/
+  .pnpm-store/
+  backend/target/
+  storage/
+  .idea/
+  *.iml
+  .classpath
+  .project
+  .settings/
+
+package.json, pnpm-lock.yaml, pnpm-workspace.yaml은 Git에 올라가는 것이 맞습니다.
+다른 사람이 pnpm install을 실행하면 이 파일들을 기준으로 의존성이 설치됩니다.

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neoulteo.domain.travelplan.mapper.TravelPlanMapper">
+    <select id="findRowsByWriterEmail" resultType="TravelPlanPlaceRow">
+        SELECT p.id,
+               p.writer_email AS writerEmail,
+               p.title,
+               p.duration_days AS durationDays,
+               p.created_at AS createdAt,
+               p.is_shared AS isShared,
+               COALESCE(pp.day_no, 1) AS dayNo,
+               pp.attraction_content_id AS attractionContentId,
+               a.content_type_id AS contentTypeId,
+               COALESCE(ct.content_type_name, '') AS contentTypeName,
+               COALESCE(a.title, pp.place_name) AS placeName,
+               a.addr1 AS address,
+               a.first_image1 AS imageUrl,
+               a.first_image1 AS firstimage,
+               a.latitude AS latitude,
+               a.longitude AS longitude,
+               a.latitude AS mapy,
+               a.longitude AS mapx
+        FROM travel_plans p
+        LEFT JOIN travel_plan_places pp ON p.id = pp.plan_id
+        LEFT JOIN attractions a ON a.content_id = pp.attraction_content_id
+        LEFT JOIN contenttypes ct ON ct.content_type_id = a.content_type_id
+        WHERE p.writer_email = #{writerEmail}
+        ORDER BY p.id DESC, pp.day_no ASC, pp.place_order ASC
+    </select>
+
+    <select id="findRowsById" resultType="TravelPlanPlaceRow">
+        SELECT p.id,
+               p.writer_email AS writerEmail,
+               p.title,
+               p.duration_days AS durationDays,
+               p.created_at AS createdAt,
+               p.is_shared AS isShared,
+               COALESCE(pp.day_no, 1) AS dayNo,
+               pp.attraction_content_id AS attractionContentId,
+               a.content_type_id AS contentTypeId,
+               COALESCE(ct.content_type_name, '') AS contentTypeName,
+               COALESCE(a.title, pp.place_name) AS placeName,
+               a.addr1 AS address,
+               a.first_image1 AS imageUrl,
+               a.first_image1 AS firstimage,
+               a.latitude AS latitude,
+               a.longitude AS longitude,
+               a.latitude AS mapy,
+               a.longitude AS mapx
+        FROM travel_plans p
+        LEFT JOIN travel_plan_places pp ON p.id = pp.plan_id
+        LEFT JOIN attractions a ON a.content_id = pp.attraction_content_id
+        LEFT JOIN contenttypes ct ON ct.content_type_id = a.content_type_id
+        WHERE p.id = #{id}
+        ORDER BY pp.day_no ASC, pp.place_order ASC
+    </select>
+
+    <select id="findSharedRowsById" resultType="TravelPlanPlaceRow">
+        SELECT p.id,
+               p.writer_email AS writerEmail,
+               p.title,
+               p.duration_days AS durationDays,
+               p.created_at AS createdAt,
+               p.is_shared AS isShared,
+               COALESCE(pp.day_no, 1) AS dayNo,
+               pp.attraction_content_id AS attractionContentId,
+               a.content_type_id AS contentTypeId,
+               COALESCE(ct.content_type_name, '') AS contentTypeName,
+               COALESCE(a.title, pp.place_name) AS placeName,
+               a.addr1 AS address,
+               a.first_image1 AS imageUrl,
+               a.first_image1 AS firstimage,
+               a.latitude AS latitude,
+               a.longitude AS longitude,
+               a.latitude AS mapy,
+               a.longitude AS mapx
+        FROM travel_plans p
+        LEFT JOIN travel_plan_places pp ON p.id = pp.plan_id
+        LEFT JOIN attractions a ON a.content_id = pp.attraction_content_id
+        LEFT JOIN contenttypes ct ON ct.content_type_id = a.content_type_id
+        WHERE p.id = #{id}
+          AND p.is_shared = TRUE
+        ORDER BY pp.day_no ASC, pp.place_order ASC
+    </select>
+
+    <insert id="insertPlan" parameterType="TravelPlanDto">
+        INSERT INTO travel_plans (id, writer_email, title, duration_days, created_at, is_shared)
+        VALUES (#{id}, #{writerEmail}, #{title}, #{durationDays}, #{createdAt}, #{isShared})
+    </insert>
+
+    <insert id="insertPlace">
+        INSERT INTO travel_plan_places (plan_id, day_no, place_order, place_name, attraction_content_id)
+        VALUES (#{planId}, #{dayNo}, #{placeOrder}, #{placeName}, #{attractionContentId})
+    </insert>
+
+    <select id="existsByIdAndWriterEmail" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM travel_plans
+            WHERE id = #{id}
+              AND writer_email = #{writerEmail}
+        )
+    </select>
+
+    <update id="updatePlan" parameterType="TravelPlanDto">
+        UPDATE travel_plans
+        SET title = #{title},
+            duration_days = #{durationDays}
+        WHERE id = #{id}
+          AND writer_email = #{writerEmail}
+    </update>
+
+    <delete id="deletePlacesByPlanId">
+        DELETE FROM travel_plan_places
+        WHERE plan_id = #{planId}
+    </delete>
+
+    <delete id="deleteByIdAndWriterEmail">
+        DELETE FROM travel_plans
+        WHERE id = #{id}
+          AND writer_email = #{writerEmail}
+    </delete>
+
+    <update id="updateShared">
+        UPDATE travel_plans
+        SET is_shared = #{shared}
+        WHERE id = #{id}
+          AND writer_email = #{writerEmail}
+    </update>
+</mapper>

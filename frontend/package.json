@@ -1,0 +1,19 @@
+{
+  "name": "neoulteo-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.5.0",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@svg-maps/south-korea": "^2.0.0",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.0.1",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  }
+}

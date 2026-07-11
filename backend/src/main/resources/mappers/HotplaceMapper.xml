@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neoulteo.domain.hotplace.mapper.HotplaceMapper">
+    <sql id="hotplaceSelectColumns">
+        h.id,
+        h.user_id AS userId,
+        h.attraction_content_id AS attractionContentId,
+        h.visit_date AS date,
+        h.description,
+        h.created_at AS createdAt,
+        h.updated_at AS updatedAt,
+        u.email AS writerEmail,
+        u.name AS writerName,
+        a.title AS name,
+        a.addr1 AS address,
+        a.first_image1 AS imageUrl,
+        a.first_image1 AS firstimage,
+        COALESCE(ct.content_type_name, 'Hotplace') AS type,
+        a.content_type_id AS contentTypeId,
+        a.area_code AS areaCode,
+        a.si_gun_gu_code AS siGunGuCode,
+        a.latitude AS latitude,
+        a.longitude AS longitude,
+        a.latitude AS mapy,
+        a.longitude AS mapx
+    </sql>
+
+    <sql id="hotplaceJoins">
+        FROM hotplaces h
+        JOIN users u ON u.id = h.user_id
+        JOIN attractions a ON a.content_id = h.attraction_content_id
+        LEFT JOIN contenttypes ct ON ct.content_type_id = a.content_type_id
+        LEFT JOIN sidos s ON s.sido_code = a.area_code
+    </sql>
+
+    <select id="findPublicHotplaces" resultType="HotplaceDto">
+        SELECT
+        <include refid="hotplaceSelectColumns"/>
+        <include refid="hotplaceJoins"/>
+        ORDER BY h.created_at DESC, h.id DESC
+    </select>
+
+    <select id="findPublicHotplacesByRegion" resultType="HotplaceDto">
+        SELECT
+        <include refid="hotplaceSelectColumns"/>
+        <include refid="hotplaceJoins"/>
+        WHERE
+        <choose>
+            <when test="areaCode != null">
+                a.area_code = #{areaCode}
+            </when>
+            <otherwise>
+                s.sido_name LIKE CONCAT('%', #{region}, '%')
+                OR a.addr1 LIKE CONCAT('%', #{region}, '%')
+            </otherwise>
+        </choose>
+        ORDER BY h.created_at DESC, h.id DESC
+    </select>
+
+    <select id="findPopularHotplaces" resultType="HotplaceDto">
+        SELECT
+            h.id,
+            h.user_id AS userId,
+            h.attraction_content_id AS attractionContentId,
+            h.visit_date AS date,
+            h.description,
+            h.created_at AS createdAt,
+            h.updated_at AS updatedAt,
+            u.email AS writerEmail,
+            u.name AS writerName,
+            a.title AS name,
+            a.addr1 AS address,
+            a.first_image1 AS imageUrl,
+            a.first_image1 AS firstimage,
+            COALESCE(ct.content_type_name, 'Hotplace') AS type,
+            a.content_type_id AS contentTypeId,
+            a.area_code AS areaCode,
+            a.si_gun_gu_code AS siGunGuCode,
+            a.latitude AS latitude,
+            a.longitude AS longitude,
+            a.latitude AS mapy,
+            a.longitude AS mapx,
+            popular.hotplaceCount
+        FROM (
+            SELECT
+                attraction_content_id,
+                COUNT(*) AS hotplaceCount,
+                MAX(id) AS latestHotplaceId
+            FROM hotplaces
+            GROUP BY attraction_content_id
+        ) popular
+        JOIN hotplaces h ON h.id = popular.latestHotplaceId
+        JOIN users u ON u.id = h.user_id
+        JOIN attractions a ON a.content_id = h.attraction_content_id
+        LEFT JOIN contenttypes ct ON ct.content_type_id = a.content_type_id
+        LEFT JOIN sidos s ON s.sido_code = a.area_code
+        <where>
+            <if test="areaCode != null">
+                a.area_code = #{areaCode}
+            </if>
+            <if test="areaCode == null and region != null and region != ''">
+                s.sido_name LIKE CONCAT('%', #{region}, '%')
+                OR a.addr1 LIKE CONCAT('%', #{region}, '%')
+            </if>
+        </where>
+        ORDER BY popular.hotplaceCount DESC, h.created_at DESC, h.id DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="findByUserId" resultType="HotplaceDto">
+        SELECT
+        <include refid="hotplaceSelectColumns"/>
+        <include refid="hotplaceJoins"/>
+        WHERE h.user_id = #{userId}
+        ORDER BY h.created_at DESC, h.id DESC
+    </select>
+
+    <select id="existsByUserIdAndAttractionContentId" resultType="boolean">
+        SELECT EXISTS (
+            SELECT 1
+            FROM hotplaces
+            WHERE user_id = #{userId}
+              AND attraction_content_id = #{attractionContentId}
+        )
+    </select>
+
+    <insert id="save" parameterType="HotplaceDto" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO hotplaces (user_id, attraction_content_id, visit_date, description)
+        VALUES (#{userId}, #{attractionContentId}, #{date}, #{description})
+    </insert>
+
+    <update id="updateByIdAndUserId" parameterType="HotplaceDto">
+        UPDATE hotplaces
+        SET visit_date = #{date},
+            description = #{description},
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = #{id}
+          AND user_id = #{userId}
+    </update>
+
+    <delete id="deleteByIdAndUserId">
+        DELETE FROM hotplaces
+        WHERE id = #{id}
+          AND user_id = #{userId}
+    </delete>
+</mapper>

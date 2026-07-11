@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.neoulteo.domain.user.mapper.UserMapper">
+    <insert id="registerUser" parameterType="UserDto">
+        INSERT INTO users (email, name, password)
+        VALUES (#{email}, #{name}, #{password})
+    </insert>
+
+    <select id="login" resultType="UserDto">
+        SELECT id, name, email, password
+        FROM users
+        WHERE email = #{email}
+          AND password = #{password}
+    </select>
+
+    <select id="findByEmail" resultType="UserDto">
+        SELECT id, name, email, password
+        FROM users
+        WHERE email = #{email}
+    </select>
+
+    <update id="updateUser">
+        UPDATE users
+        SET name = COALESCE(NULLIF(#{name}, ''), name),
+            password = COALESCE(NULLIF(#{password}, ''), password)
+        WHERE email = #{email}
+    </update>
+
+    <delete id="deleteUser">
+        DELETE FROM users
+        WHERE email = #{email}
+    </delete>
+</mapper>

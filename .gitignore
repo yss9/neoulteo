@@ -1,0 +1,57 @@
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Obsidian and editor/IDE settings
+.obsidian/
+.idea/
+*.iml
+.vscode/
+.metadata/
+.classpath
+.project
+.settings/
+
+
+# Build outputs
+build/
+target/
+out/
+backend/bin/
+*.class
+
+# Local app data
+backend/src/main/resources/application-local.properties
+backend/uploads/
+storage/
+.github-publish/
+
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+
+# Frontend dependencies and build outputs
+node_modules/
+dist/
+.vite/
+.pnpm-store/
+coverage/
+*.tsbuildinfo
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+ai-server/chroma_data/
+
+# Logs and OS files
+*.log
+.DS_Store
+Thumbs.db
