@@ -4,11 +4,19 @@ Neoulteo는 공공 관광 데이터, 지도, 사용자 기록, 커뮤니티, AI 
 
 사용자는 지역별 관광지를 지도에서 탐색하고, 마음에 드는 장소를 저장해 일차별 여행 코스를 만들 수 있습니다. 다른 사용자의 핫플레이스와 여행 코스를 커뮤니티에서 공유할 수 있고, Spring AI 기반 여행 도우미를 통해 코스 피드백과 지역 추천을 받을 수 있습니다.
 
-## 주요 화면
+## 기능별 화면
 
-| 관광지 검색 | 여행 계획 | 커뮤니티 |
-| --- | --- | --- |
-| ![관광지 검색](docs/images/F101.png) | ![여행 계획](docs/images/F104-1.png) | ![커뮤니티](docs/images/f901.png) |
+| 홈 | 관광지 검색 |
+| --- | --- |
+| ![홈](docs/images/demo-home.jpg) | ![관광지 검색](docs/images/demo-attractions.jpg) |
+
+| 여행 계획 | 핫플레이스 |
+| --- | --- |
+| ![여행 계획](docs/images/demo-travel-plan.jpg) | ![핫플레이스](docs/images/demo-hotplaces.jpg) |
+
+| 커뮤니티 | 여행 코스 공유 |
+| --- | --- |
+| ![커뮤니티](docs/images/demo-community.jpg) | ![여행 코스 공유](docs/images/demo-shared-plan.jpg) |
 
 ## 핵심 기능
 
